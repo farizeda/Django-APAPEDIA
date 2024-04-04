@@ -64,5 +64,3 @@ To set up the APAPEDIA platform, ensure you have Docker, PostgreSQL, and Flutter
 - Fariz Eda 
 - Fathan Hadyan
 - Devina Fitri Handayani 
-
-
