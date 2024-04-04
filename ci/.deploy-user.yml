@@ -1,0 +1,67 @@
+build-user:
+  rules:
+    - changes:
+        - user/**/*
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build-user
+  script:
+    - echo "Compiling the code..."
+    - cd $CI_PROJECT_DIR/user
+    - sh gradlew clean assemble
+    - |
+      echo "Creating .env file inside user folder..."
+      echo "SPRING_PROFILE=$USER_SPRING_PROFILE" >> .env
+      echo "DATABASE_URL=$USER_DATABASE_URL" >> .env
+      echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+      echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+      echo "JWT_SECRET=$JWT_SECRET" >> .env
+      echo "JWT_EXPIRY=$JWT_EXPIRY" >> .env
+      echo "ORDER_SERVICE_URL=$ORDER_SERVICE_URL" >> .env
+      echo "CATALOGUE_SERVICE_URL=$CATALOGUE_SERVICE_URL" >> .env
+    - cat .env
+  artifacts:
+    paths:
+      - user/build/libs/user-0.0.1-SNAPSHOT.jar
+      - user/.env
+
+build-image-user:
+  rules:
+    - changes:
+        - user/**/*
+  stage: build-image-user
+  script:
+    - echo "Building Docker Image..."
+    - cd $CI_PROJECT_DIR/user
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-user:$CI_COMMIT_SHORT_SHA .
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-user:latest .
+
+publish-image-user:
+  rules:
+    - changes:
+        - user/**/*
+  stage: publish-image-user
+  script:
+    - echo "Publishing Docker Image..."
+    - cd $CI_PROJECT_DIR/user
+    - echo $REGISTRY_SERVER
+    - echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USERNAME --password-stdin $REGISTRY_SERVER
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-user:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-user:latest
+
+copy-env-user:
+  rules:
+    - changes:
+        - user/**/*
+  stage: copy-env-user
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+  script:
+    - echo "Deploy to server..."
+    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" "mkdir -p ~/tk-apap-36/user"
+    - rsync -rahv $CI_PROJECT_DIR/user/.env "${DEPLOY_USERNAME}@${DEPLOY_SERVER}:~/tk-apap-36/user/"

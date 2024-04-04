@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <head th:fragment="css">
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    </head>
+    <head th:fragment="js">
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <title>Title</title>
+</head>
+<body>
+<nav th:fragment="navbar" class="navbar flex justify-between items-center bg-primary text-neutral px-6">
+    <a class="text-xl font-bold " th:href="@{'/'}">APAPEDIA</a>
+    <div th:if="${user == null}" class="flex gap-2">
+        <a th:href="@{https://sso.ui.ac.id/cas2/login?service={service}(service=${@environment.getProperty('service.client')})}" class="btn btn-secondary text-white text-lg font-bold">Login</a>
+        <a th:href="@{/registration}" class="text-lg font-bold">Register</a>
+    </div>
+    <div th:unless="${user == null}" class="flex gap-2">
+        <details  class="dropdown dropdown-end">
+            <summary  tabindex="0" role="button" class="btn m-1 text-xl font-bold" th:text="${user.username}">Click</summary >
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow shadow-white/20 bg-base-100 rounded-box w-52">
+                <li>
+                    <a th:href="@{/profile}" class="text-lg font-bold text-white">Profile</a>
+                </li>
+                <li>
+                    <a th:href="@{/order/stats}" class="text-lg font-bold text-white">Order Stats</a>
+                </li>
+                <li>
+                    <a th:href="@{/order}" class="text-lg font-bold text-white">Order History</a>
+                </li>
+                <li>
+                    <a th:href="@{/logout}" class="text-lg font-bold text-error">Logout</a>
+                </li>
+            </ul>
+        </details >
+
+    </div>
+</nav>
+
+</body>
+</html>

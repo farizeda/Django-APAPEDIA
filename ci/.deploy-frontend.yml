@@ -1,0 +1,69 @@
+build-frontend:
+  rules:
+    - changes:
+        - frontend/**/*
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build-frontend
+  script:
+    - echo "Compiling the code..."
+    - cd $CI_PROJECT_DIR/frontend
+    - sh gradlew clean assemble
+    - |
+      echo "Creating .env file inside frontend folder..."
+      echo "SPRING_PROFILE=$WEB_SPRING_PROFILE" >> .env
+      echo "SPRING_DEBUG_DISABLE=$SPRING_DEBUG_DISABLE" >> .env
+      echo "CATALOGUE_SERVICE_URL=$EXTERNAL_CATALOGUE_SERVICE_URL" >> .env
+      echo "ORDER_SERVICE_URL=$EXTERNAL_ORDER_SERVICE_URL" >> .env
+      echo "USER_SERVICE_URL=$EXTERNAL_USER_SERVICE_URL" >> .env
+      echo "CLIENT_SERVICE_URL=$CLIENT_SERVICE_URL" >> .env
+      echo "JWT_SECRET=$JWT_SECRET" >> .env
+      echo "S3_ACCESS_KEY=$S3_ACCESS_KEY" >> .env
+      echo "S3_SECRET_KEY=$S3_SECRET_KEY" >> .env
+      echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+    - cat .env
+  artifacts:
+    paths:
+      - frontend/build/libs/frontend-0.0.1-SNAPSHOT.jar
+      - frontend/.env
+
+build-image-frontend:
+  rules:
+    - changes:
+        - frontend/**/*
+  stage: build-image-frontend
+  script:
+    - echo "Building Docker Image..."
+    - cd $CI_PROJECT_DIR/frontend
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-frontend:$CI_COMMIT_SHORT_SHA .
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-frontend:latest .
+
+publish-image-frontend:
+  rules:
+    - changes:
+        - frontend/**/*
+  stage: publish-image-frontend
+  script:
+    - echo "Publishing Docker Image..."
+    - cd $CI_PROJECT_DIR/frontend
+    - echo $REGISTRY_SERVER
+    - echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USERNAME --password-stdin $REGISTRY_SERVER
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-frontend:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-frontend:latest
+
+copy-env-frontend:
+  rules:
+    - changes:
+        - frontend/**/*
+  stage: copy-env-frontend
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+  script:
+    - echo "Deploy to server..."
+    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" "mkdir -p ~/tk-apap-36/frontend"
+    - rsync -rahv $CI_PROJECT_DIR/frontend/.env "${DEPLOY_USERNAME}@${DEPLOY_SERVER}:~/tk-apap-36/frontend/"

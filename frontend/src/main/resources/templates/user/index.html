@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Apapedia | Profile</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object>
+</head>
+<body>
+<nav th:replace="~{common::navbar}"></nav>
+
+<div class="w-full h-screen flex flex-col gap-12 p-6">
+    <div class="w-full flex justify-between items-center">
+        <h1 class="text-6xl font-bold">Profile</h1>
+        <div class="alert alert-error w-fit" role="alert" th:text="${error}" th:if="${error}"></div>
+        <div class="alert alert-success w-fit" role="alert" th:text="${success}" th:if="${success}"></div>
+    </div>
+    <div class="w-full flex gap-6">
+        <div class="card h-full justify-between p-6 flex flex-col gap-3 bg-base-300 shadow-xl">
+            <h2 class="text-2xl font-bold">Detail</h2>
+            <div class="flex flex-col gap-2">
+                <div class="flex flex-col">
+                    <span>Name</span>
+                    <span class="text-lg font-bold text-info" th:text="${userDetail.name == null ? '-' : userDetail.name}"></span>
+                </div>
+                <div class="flex flex-col">
+                    <span>Email</span>
+                    <span class="text-lg font-bold text-info" th:text="${userDetail.email}"></span>
+                </div>
+                <div class="flex flex-col">
+                    <span>Address</span>
+                    <span class="text-lg font-bold text-info" th:text="${userDetail.address == null ? '-' : userDetail.address}"></span>
+                </div>
+            </div>
+            <a th:href="@{/profile/update}" class="btn btn-wide btn-primary text-lg font-bold">Update</a>
+            <a th:href="@{/profile/delete}" class="btn btn-wide btn-error text-lg font-bold">Delete Account</a>
+        </div>
+        <div class="flex flex-col w-1/3 gap-6">
+            <div class="card w-full p-6 flex flex-col gap-3 bg-base-300 shadow-xl">
+                <h2 class="text-2xl font-bold">Balance</h2>
+                <div class="flex gap-2">
+                    <span class="text-2xl font-bold">Rp</span>
+                    <span class="text-6xl text-info font-bold" th:text="${#strings.replace(#numbers.formatCurrency(userDetail.balance), '$', '')}"></span>
+                </div>
+            </div>
+            <div class="card p-6 w-full flex flex-col gap-3 bg-base-300 shadow-xl">
+                <h2 class="text-2xl font-bold">Withdraw</h2>
+                <form th:action="@{/profile/withdraw}" method="post" th:object="${withdraw}" class="flex w-full flex-col gap-4">
+                    <div class="flex flex-col">
+                        <input id="amount" class="input w-5/6" type="number" placeholder="10000" th:field="*{amount}"/>
+                        <small>Min. Rp 10,000</small>
+                    </div>
+                    <button class="btn btn-primary w-5/6 shrink text-lg font-bold">Withdraw</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Apapedia | Profile</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object></head>
+</head>
+<body>
+<nav th:replace="~{common::navbar}"></nav>
+<div class="alert alert-error fixed top-6 w-fit" role="alert" th:text="${error}" th:if="${error}"></div>
+
+<div class="w-full h-screen flex justify-center items-center">
+    <div class="w-1/4 flex flex-col gap-2 bg-base-200 items-center card">
+        <h1 class="card-title text-primary text-4xl font-bold">Update Profile</h1>
+        <form th:action="@{/profile/update}" method="post" th:object="${dto}"  class="card-body flex w-full flex-col gap-4">
+            <div class="flex flex-col gap-2 w-full">
+                <input id="username" class="input" type="text" placeholder="Username" th:field="*{username}"/>
+                <input id="email" class="input" type="email" placeholder="Email" th:field="*{email}"/>
+                <input id="name" class="input" type="text" placeholder="Name" th:field="*{name}"/>
+                <input id="address" class="input" type="text" placeholder="Address" th:field="*{address}"/>
+            </div>
+            <div class="flex w-full flex-col justify-between gap-2">
+                <button class="btn btn-secondary shrink text-lg font-bold">Update</button>
+                <a th:href="@{/profile}" class="btn shrink text-lg font-bold">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

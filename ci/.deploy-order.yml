@@ -1,0 +1,67 @@
+build-order:
+  rules:
+    - changes:
+        - order/**/*
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build-order
+  script:
+    - echo "Compiling the code..."
+    - cd $CI_PROJECT_DIR/order
+    - sh gradlew clean assemble
+    - |
+      echo "Creating .env file inside order folder..."
+      echo "SPRING_PROFILE=$ORDER_SPRING_PROFILE" >> .env
+      echo "DATABASE_URL=$ORDER_DATABASE_URL" >> .env
+      echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+      echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+      echo "JWT_SECRET=$JWT_SECRET" >> .env
+      echo "JWT_EXPIRY=$JWT_EXPIRY" >> .env
+      echo "USER_SERVICE_URL=$USER_SERVICE_URL" >> .env
+      echo "CATALOGUE_SERVICE_URL=$CATALOGUE_SERVICE_URL" >> .env
+    - cat .env
+  artifacts:
+    paths:
+      - order/build/libs/order-0.0.1-SNAPSHOT.jar
+      - order/.env
+
+build-image-order:
+  rules:
+    - changes:
+        - order/**/*
+  stage: build-image-order
+  script:
+    - echo "Building Docker Image..."
+    - cd $CI_PROJECT_DIR/order
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-order:$CI_COMMIT_SHORT_SHA .
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-order:latest .
+
+publish-image-order:
+  rules:
+    - changes:
+        - order/**/*
+  stage: publish-image-order
+  script:
+    - echo "Publishing Docker Image..."
+    - cd $CI_PROJECT_DIR/order
+    - echo $REGISTRY_SERVER
+    - echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USERNAME --password-stdin $REGISTRY_SERVER
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-order:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-order:latest
+
+copy-env-order:
+  rules:
+    - changes:
+        - order/**/*
+  stage: copy-env-order
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+  script:
+    - echo "Deploy to server..."
+    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" "mkdir -p ~/tk-apap-36/order"
+    - rsync -rahv $CI_PROJECT_DIR/order/.env "${DEPLOY_USERNAME}@${DEPLOY_SERVER}:~/tk-apap-36/order/"

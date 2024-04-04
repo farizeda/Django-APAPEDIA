@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Apapedia | Stats</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav th:replace="~{common::navbar}"></nav>
+
+<div class="w-full h-screen flex flex-col gap-12 p-6">
+    <div class="w-full flex justify-between items-center">
+        <h1 class="text-6xl font-bold">Current Order Statuses</h1>
+    </div>
+    <div class="w-full flex justify-center items-center">
+        <canvas id="order-stats"></canvas>
+    </div>
+</div>
+<script th:inline="javascript">
+
+    const orderStats = [[${orderStats}]];
+
+    const labels = orderStats.map((stats) => {
+        return stats["status"];
+    });
+
+    const orderData = orderStats.map((stats) => {
+        return stats["quantity"];
+    });
+
+    const colors = [
+        'rgba(255,99,132,0.2)',
+        'rgba(54,162,235,0.2)',
+        'rgba(255,206,86,0.2)',
+        'rgba(75,192,192,0.2)',
+        'rgba(153,102,255,0.2)',
+        'rgba(253,159,64,0.2)'
+    ];
+
+    const borderColors = [
+        'rgba(255,99,132,1)',
+        'rgba(54,162,235,1)',
+        'rgba(255,206,86,1)',
+        'rgba(75,192,192,1)',
+        'rgba(153,102,255,1)',
+        'rgba(253,159,64,1)'
+    ];
+
+    const ctx = document.getElementById('order-stats');
+
+    new Chart(ctx,{
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label:'Status',
+                data: orderData,
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }]
+        },
+        options:{
+            scales:{
+                y:{
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

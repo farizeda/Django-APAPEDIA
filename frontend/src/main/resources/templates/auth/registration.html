@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Apapedia | Registration</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object></head>
+</head>
+<body class="w-full h-screen flex justify-center items-center">
+<div class="alert alert-error fixed top-6 w-fit" role="alert" th:text="${error}" th:if="${error}"></div>
+
+<div class="w-1/3 flex flex-col gap-2 bg-base-200 items-center card">
+    <h1 class="card-title text-primary text-4xl font-bold">Apapedia</h1>
+    <h2 class="text-white/70 text-xl font-bold">Register to shop!</h2>
+    <form th:action="@{/registration}" method="post" th:object="${dto}"  class="card-body flex w-full flex-col gap-4">
+        <div class="flex flex-col gap-2 w-full">
+            <div class="flex gap-2 w-full justify-between">
+                <input id="username" class="input w-1/2" type="text" placeholder="Username" th:field="*{username}"/>
+                <input id="email" class="input w-1/2" type="email" placeholder="Email" th:field="*{email}"/>
+            </div>
+            <div class="flex gap-2 w-full justify-between">
+                <input id="password" class="input w-1/2" type="password" placeholder="Password" th:field="*{password}"/>
+                <input id="password-confirmation" class="input w-1/2" type="password" placeholder="Confirm your password" th:field="*{passwordConfirmation}"/>
+            </div>
+            <select id="category" th:field="*{category}" class="select">
+                <option th:value="regular">Regular</option>
+                <option th:value="official_store">Official Store</option>
+            </select>
+        </div>
+        <div class="flex w-full justify-between gap-2">
+            <a th:href="@{/login}" class="btn w-1/2 shrink text-lg font-bold">Back</a>
+            <button class="btn btn-secondary w-1/2 shrink text-lg font-bold">Register</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

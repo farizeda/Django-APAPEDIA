@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Apapedia | Catalogue</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object>
+  </head>
+  <body>
+    <nav th:replace="~{common::navbar}"></nav>
+
+    <div
+      class="alert alert-error fixed top-6 w-fit"
+      role="alert"
+      th:text="${error}"
+      th:if="${error}"
+    ></div>
+    <div class="w-full h-screen flex justify-center items-center">
+      <div class="w-1/3 flex flex-col gap-2 bg-base-200 items-center card py-6">
+        <h1 class="card-title text-primary text-4xl font-bold">
+          Update Catalogue
+        </h1>
+        <form
+          th:action="@{/catalogue/{catalogueId}/update(catalogueId=${dto.id})}"
+          method="post"
+          th:object="${dto}"
+          class="card-body flex w-full flex-col gap-4"
+          enctype="multipart/form-data"
+        >
+          <div class="flex flex-col gap-2 w-full">
+            <input
+              id="productImage"
+              class="file-input"
+              type="file"
+              name="image"
+              accept="image/*"
+            />
+            <input
+                id="imageUrl"
+                type="hidden"
+                th:field="*{imageUrl}"
+            />
+            <input
+              id="name"
+              class="input"
+              type="text"
+              placeholder="Catalogue name"
+              th:field="*{name}"
+            />
+            <select
+              id="productCategory"
+              th:field="*{categoryId}"
+              class="select"
+            >
+              <option
+                th:each="category : ${categories}"
+                th:value="${category.id}"
+                th:text="${category.name}"
+              ></option>
+            </select>
+            <textarea
+              id="description"
+              class="textarea"
+              th:field="*{description}"
+            ></textarea>
+            <div class="flex gap-2">
+              <input
+                id="stock"
+                class="input w-1/2 shrink"
+                type="number"
+                placeholder="Stock"
+                th:field="*{stock}"
+              />
+              <input
+                id="price"
+                class="input w-1/2 shrink"
+                type="number"
+                placeholder="Price"
+                th:field="*{price}"
+              />
+            </div>
+          </div>
+          <div class="flex w-full justify-between gap-2">
+            <a th:href="@{/}" class="btn w-1/2 shrink text-lg font-bold"
+              >Back</a
+            >
+            <button class="btn btn-secondary w-1/2 shrink text-lg font-bold">
+              Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

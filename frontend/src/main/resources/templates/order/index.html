@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html data-theme="dim" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Apapedia | Order</title>
+    <object th:insert="~{common::css}" th:remove="tag"></object>
+    <object th:insert="~{common::js}" th:remove="tag"></object>
+</head>
+<body>
+<nav th:replace="~{common::navbar}"></nav>
+
+<div class="w-full h-screen flex flex-col gap-12 p-6">
+    <div class="w-full flex justify-between items-center">
+        <h1 class="text-6xl font-bold">Order Histories</h1>
+        <div class="alert alert-error w-fit" role="alert" th:text="${error}" th:if="${error}"></div>
+        <div class="alert alert-success w-fit" role="alert" th:text="${success}" th:if="${success}"></div>
+    </div>
+    <div class="w-full grid grid-cols-2 gap-4" th:if="${orders != null}">
+        <form th:action="@{/order/{id}/update(id=${order.id})}" th:method="get" th:each="order : ${orders}" class="card bg-base-300 shadow-xl hover:shadow-white/20 transition-all duration-200 ease-in-out h-full">
+            <input type="hidden" th:value="${order.status + 1}" name="nextStatus">
+            <div class="card-body w-full p-6 flex flex-col gap-2 justify-between">
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <div  th:classappend="${order.status < 4 ? 'badge-warning' : 'badge-primary'}" class=" badge font-bold p-2" th:text="${order.statusName}"></div>
+                        <div class="flex gap-2">
+                            <span class="text-lg font-bold">Rp</span>
+                            <span class="text-3xl text-info font-bold" th:text="${#strings.replace(#numbers.formatCurrency(order.totalPrice), '$', '')}"></span>
+                        </div>
+                    </div>
+                    <div class="w-full flex flex-col gap-2">
+                        <div th:each="orderItem : ${order.items}" class="flex w-full justify-between items-center bg-white/30 p-2 rounded-xl">
+                            <span class="text-lg font-bold text-info" th:text="${orderItem.name}"></span>
+                            <div class="flex gap-2 items-end">
+                                <span class="font-bold">X</span>
+                                <span class="text-2xl text-info font-bold" th:text="${orderItem.quantity}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary font-bold" th:text="${actions.get(order.status)}" th:if="${order.status < 3}"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+version: '3.3'
+services:
+  catalogue:
+    image: apap-registry.cs.ui.ac.id/adjie.djaka/tk-apap-36-catalogue
+    restart: always
+    ports:
+      - '10212:8081'
+    volumes:
+      - ./catalogue/file-storage:/file-storage
+      - ./catalogue/log:/log
+    env_file:
+      - ./catalogue/.env
+    depends_on:
+      - db
+    networks:
+      - backend-network
+  order:
+    image: apap-registry.cs.ui.ac.id/adjie.djaka/tk-apap-36-order
+    restart: always
+    ports:
+      - '10211:8080'
+    volumes:
+      - ./order/file-storage:/file-storage
+      - ./order/log:/log
+    env_file:
+      - ./order/.env
+    depends_on:
+      - db
+    networks:
+      - backend-network
+  user:
+    image: apap-registry.cs.ui.ac.id/adjie.djaka/tk-apap-36-user
+    restart: always
+    ports:
+      - '10210:8082'
+    volumes:
+      - ./user/file-storage:/file-storage
+      - ./user/log:/log
+    env_file:
+      - ./user/.env
+    depends_on:
+      - db
+    networks:
+      - backend-network
+  web:
+    image: apap-registry.cs.ui.ac.id/adjie.djaka/tk-apap-36-frontend
+    restart: always
+    ports:
+      - '10213:8083'
+    volumes:
+      - ./frontend/file-storage:/file-storage
+      - ./frontend/log:/log
+    env_file:
+      - ./frontend/.env
+    networks:
+      - frontend-network
+  db:
+    image: postgres:14-alpine
+    ports:
+      - '15212:5432'
+    restart: 'no'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret99
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - backend-network
+volumes:
+  db:
+    driver: local
+networks:
+  backend-network:
+    driver: bridge
+  frontend-network:
+    driver: bridge

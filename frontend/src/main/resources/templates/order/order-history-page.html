@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+    <title>View All Buku</title>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('order')}"></nav>
+<div class="container">
+    <div class="text-center pt-5">
+        <h2>Daftar Pesanan</h2>
+    </div>
+
+    <table class="table" id="tableOrder">
+        <thead>
+        <tr>
+            <th>Customer ID</th>
+            <th>Nama Produk</th>
+            <th>Kuantitas</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="orders, iterationStatus: ${listOrder}" th:style="${iterationStatus.even} ? 'font-weight:bold;'">
+            <td th:text="${iterationStatus.count}"></td>
+            <td>
+                <h5 th:text="${orders.customerId}" class="card-title"></h5>
+            </td>
+            <td>
+                <h6 th:text="${orders.order_item.productName}"></h6>
+            </td>
+            <td>
+                <h6 th:text="${orders.order_item.quantity}"></h6>
+            </td>
+            <td>
+                <h5 th:text="${orders.status}" class="card-title"></h5>
+            </td>
+            <td>
+                <a type="button" class="btn btn-md btn-warning" >Update Order Status</a>
+                <a type="button" class="btn btn-md btn-danger" >Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#tableOrder').DataTable({
+            "lengthMenu": [ 5, 10, 20 ],
+            "columnDefs": [
+                { targets: [5], sortable: false },
+            ]
+        });
+    });
+</script>
+</body>
+
+</html>

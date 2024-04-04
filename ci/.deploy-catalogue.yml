@@ -1,0 +1,67 @@
+build-catalogue:
+  rules:
+    - changes:
+        - catalogue/**/*
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build-catalogue
+  script:
+    - echo "Compiling the code..."
+    - cd $CI_PROJECT_DIR/catalogue
+    - sh gradlew clean assemble
+    - |
+      echo "Creating .env file inside catalogue folder..."
+      echo "SPRING_PROFILE=$CATALOGUE_SPRING_PROFILE" >> .env
+      echo "DATABASE_URL=$CATALOGUE_DATABASE_URL" >> .env
+      echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+      echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+      echo "JWT_SECRET=$JWT_SECRET" >> .env
+      echo "JWT_EXPIRY=$JWT_EXPIRY" >> .env
+      echo "USER_SERVICE_URL=$USER_SERVICE_URL" >> .env
+      echo "ORDER_SERVICE_URL=$ORDER_SERVICE_URL" >> .env
+    - cat .env
+  artifacts:
+    paths:
+      - catalogue/build/libs/catalogue-0.0.1-SNAPSHOT.jar
+      - catalogue/.env
+
+build-image-catalogue:
+  rules:
+    - changes:
+        - catalogue/**/*
+  stage: build-image-catalogue
+  script:
+    - echo "Building Docker Image..."
+    - cd $CI_PROJECT_DIR/catalogue
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-catalogue:$CI_COMMIT_SHORT_SHA .
+    - docker build -t $REGISTRY_SERVER/adjie.djaka/tk-apap-36-catalogue:latest .
+
+publish-image-catalogue:
+  rules:
+    - changes:
+        - catalogue/**/*
+  stage: publish-image-catalogue
+  script:
+    - echo "Publishing Docker Image..."
+    - cd $CI_PROJECT_DIR/catalogue
+    - echo $REGISTRY_SERVER
+    - echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USERNAME --password-stdin $REGISTRY_SERVER
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-catalogue:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY_SERVER/adjie.djaka/tk-apap-36-catalogue:latest
+
+copy-env-catalogue:
+  rules:
+    - changes:
+        - catalogue/**/*
+  stage: copy-env-catalogue
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+  script:
+    - echo "Deploy to server..."
+    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" "mkdir -p ~/tk-apap-36/catalogue"
+    - rsync -rahv $CI_PROJECT_DIR/catalogue/.env "${DEPLOY_USERNAME}@${DEPLOY_SERVER}:~/tk-apap-36/catalogue/"
